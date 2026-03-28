@@ -1,0 +1,29 @@
+# Build artifacts
+node_modules
+.next
+out
+build
+
+# Environment files
+.env*.local
+.env
+.env.production
+.env.development
+
+# Git
+.git
+.gitignore
+
+# Others
+README.md
+Dockerfile
+.dockerignore
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+.DS_Store
+*.md
+plan.md
+challenge.md
+walkthrough.md
+task.md
