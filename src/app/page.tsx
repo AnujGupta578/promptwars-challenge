@@ -23,13 +23,29 @@ export default function Home() {
         body: JSON.stringify({ text, mediaType, mediaBase64 }),
       });
 
-      const json = await response.json();
-
-      if (!response.ok) {
+      if (!response.ok || !response.body) {
+        const json = await response.json();
         throw new Error(json.message || 'Failed to process the request block.');
       }
 
-      setActionPlan(json.data);
+      // 🏆 Project 100: Real-time Streaming
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let done = false;
+      let accumulatedText = "";
+
+      while (!done) {
+        const { value, done: readerDone } = await reader.read();
+        done = readerDone;
+        if (value) {
+          const chunkText = decoder.decode(value, { stream: true });
+          accumulatedText += chunkText;
+        }
+      }
+
+      // Final processing once the stream ends
+      const finalPlan = JSON.parse(accumulatedText);
+      setActionPlan(finalPlan);
     } catch (err: unknown) {
       const error = err instanceof Error ? err : new Error('An unknown error occurred');
       console.error(error);

@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { resolveAction } from '@/lib/agents/orchestrator';
+import { resolveActionStream } from '@/lib/agents/orchestrator';
+import { db } from '@/lib/firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
-// Define the input schema
 const requestSchema = z.object({
   text: z.string().optional(),
   mediaType: z.enum(['image', 'audio', 'none']).default('none'),
@@ -12,32 +13,57 @@ const requestSchema = z.object({
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    
-    // Validate the input using Zod
     const parsedData = requestSchema.safeParse(body);
+    
     if (!parsedData.success) {
-      return NextResponse.json(
-        { error: 'Invalid input', details: parsedData.error.format() },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Invalid input' }, { status: 400 });
     }
     
     const { text, mediaType, mediaBase64 } = parsedData.data;
 
-    // Call the orchestrator
-    const result = await resolveAction({
-      text,
-      mediaType,
-      mediaBase64,
+    // 1. Get the stream from the Multi-Agent Orchestrator
+    const resultStream = await resolveActionStream({ text, mediaType, mediaBase64 });
+
+    // 2. Setup standard web stream response for Next.js
+    const encoder = new TextEncoder();
+    const stream = new ReadableStream({
+      async start(controller) {
+        let fullText = "";
+        
+        try {
+          for await (const chunk of resultStream.stream) {
+            const chunkText = chunk.text();
+            fullText += chunkText;
+            controller.enqueue(encoder.encode(chunkText));
+          }
+
+          // 🏆 Project 100: Grounding & Persistence
+          // Once the stream is complete, parse and store the final result
+          const finalPlan = JSON.parse(fullText);
+          await addDoc(collection(db, "bridge-logs"), {
+            ...finalPlan,
+            originalInput: text || '',
+            mediaType,
+            timestamp: serverTimestamp()
+          });
+        } catch (e) {
+          console.error("Streaming/Logging error:", e);
+        } finally {
+          controller.close();
+        }
+      },
     });
 
-    return NextResponse.json({ success: true, data: result });
+    return new Response(stream, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+      },
+    });
+
   } catch (error: unknown) {
-    const err = error instanceof Error ? error : new Error('An unknown error occurred');
-    console.error('Error resolving action:', err);
-    return NextResponse.json(
-      { error: 'Internal Server Error', message: err.message },
-      { status: 500 }
-    );
+    console.error('API Error:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

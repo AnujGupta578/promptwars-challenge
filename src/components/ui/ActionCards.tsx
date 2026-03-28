@@ -2,7 +2,8 @@
 
 import React from 'react';
 import { ShieldCheck, AlertTriangle, Info, Activity } from 'lucide-react';
-import { ActionPlan } from '@/lib/agents/orchestrator';
+import { ActionPlan } from '@/lib/agents/specialized/StrategyAgent';
+import SafetyMap from './SafetyMap';
 
 interface ActionCardsProps {
   plan: ActionPlan | null;
@@ -51,6 +52,16 @@ export default function ActionCards({ plan }: ActionCardsProps) {
 
       <div className="relative z-10">
         <h3 className="text-xl font-semibold mb-4 border-b border-white/20 pb-2">Action Plan</h3>
+        
+        {plan.location && (
+          <div className="mb-6">
+            <h4 className="text-sm font-medium opacity-70 uppercase tracking-widest mb-2 flex items-center gap-2">
+              <Activity size={14} /> Recommended Safety Zone
+            </h4>
+            <SafetyMap location={plan.location} />
+          </div>
+        )}
+
         <ul className="space-y-3">
           {plan.steps.map((step, idx) => (
             <li key={idx} className="flex gap-3 items-start bg-white/5 p-3 rounded-lg border border-white/5 hover:bg-white/10 transition-colors">
