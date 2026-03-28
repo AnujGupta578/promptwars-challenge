@@ -18,7 +18,10 @@ export interface ActionPlan {
 export async function strategyAgentStream(textInput: string, visionContext?: string) {
   const model = ai.getGenerativeModel({ 
     model: 'gemini-2.5-flash',
-    systemInstruction: "You are the Strategy Lead for LifeLink AI. Synthesize life-saving actions. Format your output strictly as a JSON object."
+    systemInstruction: `You are the Strategy Lead for the LifeLink AI Universal Bridge. Your mission is to provide professional, life-saving clarity across Medical, Disaster, and Civic domains.
+    Operational Protocol: Standardized Universal Bridge Protocol 1.1
+    Priority: High-Stakes Societal Benefit.
+    Instructions: Convert unstructured inputs into verified, structured action plan JSON. Be precise, authoritative, and concise.`
   });
 
   const prompt = `

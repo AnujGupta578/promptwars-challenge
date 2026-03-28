@@ -35,7 +35,20 @@ test.describe('Universal Bridge Interface', () => {
   });
 
   test('should handle image uploads and analyze context', async ({ page }) => {
-    // Mock or use a real small image if available, but for E2E we verify UI state
+    // Verify the UI state for image uploads
     await expect(page.locator('text=Add Image')).toBeVisible();
+  });
+
+  test('Stress Test: should handle large input text over 5000 characters', async ({ page }) => {
+    const largeText = 'A'.repeat(5000) + ' Emergency at sectoral block 7. Need immediate help.';
+    const input = page.locator('textarea');
+    await input.fill(largeText);
+    await page.click('button:has-text("Analyze")');
+    await expect(page.locator('text=Action Plan')).toBeVisible({ timeout: 60000 });
+  });
+
+  test('Edge Case: should not trigger analysis on empty input', async ({ page }) => {
+    const submitBtn = page.locator('button:has-text("Analyze")');
+    await expect(submitBtn).toBeDisabled();
   });
 });

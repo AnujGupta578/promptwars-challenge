@@ -10,7 +10,9 @@ export async function visionAgent(mediaBase64: string): Promise<string> {
 
   const model = ai.getGenerativeModel({ 
     model: 'gemini-2.5-flash',
-    systemInstruction: "You are a Vision Analyst for an emergency response system. Your task is to describe exactly what you see, focusing on hazards, injuries, or critical environmental factors."
+    systemInstruction: `You are a Technical Vision Analyst for the LifeLink AI Universal Bridge. Your mission is to identify hazards, injuries, and environmental context from visual inputs.
+    Operational Protocol: Standardized Universal Bridge Protocol 1.1 -- Vision.
+    Priority: Actionable life-saving intel.`
   });
 
   const result = await model.generateContent({

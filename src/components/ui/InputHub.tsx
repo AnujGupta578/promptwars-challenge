@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
+import Image from 'next/image';
 import { ImageIcon, Mic, Send, Loader2, X } from 'lucide-react';
 
 interface InputHubProps {
@@ -37,10 +38,6 @@ export default function InputHub({ onSubmit, isLoading }: InputHubProps) {
       mediaPreview ? 'image' : 'none', 
       mediaPreview || undefined
     );
-    
-    // We intentionally keep the text/preview until successful, but for UX:
-    // setText('');
-    // setMediaPreview(null);
   };
 
   return (
@@ -49,11 +46,18 @@ export default function InputHub({ onSubmit, isLoading }: InputHubProps) {
       
       {mediaPreview && (
         <div className="mb-4 relative rounded-md overflow-hidden bg-black/50 border border-white/10 p-2 inline-block">
-          <img src={mediaPreview} alt="Preview" className="max-h-48 rounded object-contain" />
+          <Image 
+            src={mediaPreview} 
+            alt="Preview" 
+            width={400} 
+            height={200} 
+            className="max-h-48 rounded object-contain" 
+            priority
+          />
           <button 
             type="button" 
             onClick={() => setMediaPreview(null)}
-            className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white p-1 rounded-full p-1"
+            className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white p-1 rounded-full"
           >
             <X size={16} />
           </button>
@@ -102,7 +106,7 @@ export default function InputHub({ onSubmit, isLoading }: InputHubProps) {
           <button
             type="submit"
             disabled={isLoading || (!text.trim() && !mediaPreview)}
-            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white rounded-full font-semibold px-8 shadow-lg shadow-cyan-500/20 transition-all hover:scale-105 disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white rounded-full font-semibold shadow-lg shadow-cyan-500/20 transition-all hover:scale-105 disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed"
           >
             {isLoading ? <Loader2 size={20} className="animate-spin" /> : <Send size={20} />}
             <span>{isLoading ? 'Processing...' : 'Analyze'}</span>
